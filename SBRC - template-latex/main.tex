@@ -1,0 +1,59 @@
+\documentclass[12pt]{article}
+
+% -------------------------
+% Template SBRC / SBC
+% -------------------------
+\usepackage{sbc-template}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\sloppy
+
+\title{Estudo da Influência das Features e do Desempenho dos Classificadores na Detecção de Anomalias em Redes}
+
+\author{
+João Lucas Oliveira Mota\inst{1},
+João Lucas Rodrigues da Silva\inst{2},
+José Alberto Rodrigues Neto\inst{2}
+}
+
+\address{
+Departamento de Engenharia de Teleinformática -- Universidade Federal do Ceará (UFC)\\
+Fortaleza -- CE -- Brasil
+\nextinstitute
+Departamento de Computação -- Universidade Federal do Ceará (UFC)\\
+Fortaleza -- CE -- Brasil
+\email{\{jlucasoliveira2002\}@gmail.com,
+\{joao.lsilva,albertoo11\}@alu.ufc.br}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{resumo}
+Este trabalho investiga o impacto da seleção e remoção manual de atributos no desempenho de classificadores de Aprendizado de Máquina para detecção de anomalias em redes de computadores. Utilizando o conjunto de dados Network Intrusion Detection, disponibilizado publicamente por Sampada Bhosale \cite{dataset_kaggle}, foram avaliados os modelos Random Forest (RF), K-Nearest Neighbors (KNN), Multilayer Perceptron (MLP) e Isolation Forest (IF). Os experimentos simularam cenários de indisponibilidade de dados através da exclusão controlada de features críticas, como o parâmetro src\_bytes. Os resultados demonstraram que o Random Forest obteve o melhor desempenho inicial, porém apresentou maior sensibilidade à perda de informações, com queda no desempenho ao remover atributos influentes. Em contraste, o MLP revelou maior robustez e capacidade de generalização, mantendo F1-Scores superiores a 0,99 mesmo com conjuntos reduzidos. O estudo conclui que a escolha do classificador deve considerar não apenas a precisão absoluta, mas a resiliência do modelo em ambientes reais onde a integridade dos dados pode ser comprometida.
+\end{resumo}
+
+% -------------------------
+% Seções
+% -------------------------
+\input{secoes/01-introducao}
+\input{secoes/02-dataset}
+\input{secoes/03-metodologia.tex}
+\input{secoes/04-resultados}
+
+\input{secoes/05-conclusao}
+
+\bibliographystyle{sbc}
+\bibliography{referencias}
+\clearpage
+\appendix
+\input{secoes/apendice-a}
+\clearpage
+\input{secoes/apendice-b}
+\end{document}

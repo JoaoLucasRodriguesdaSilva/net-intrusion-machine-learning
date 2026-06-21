@@ -1,0 +1,208 @@
+\section{Resultados e Discussão}
+
+\subsection{Métricas de Avaliação}
+Para analisar o desempenho dos classificadores, foram utilizadas métricas fundamentais de aprendizado de máquina: \textit{Precision}, \textit{Recall}, \textit{F1-Score} e \textit{Support}.
+
+A \textit{Precision} avalia a porcentagem de instancias dadas como positivas que eram realmente positivas, ajudando a identificar a quantidade adivinhações falsas positivas. Em contrapartida, o \textit{Recall} mede a capacidade do modelo de identificar corretamente todas as instancias positivas presentes no dataset, servindo para medir a proporção de adivinhações falsas negativas.
+
+O \textit{F1-Score} consiste na média harmônica entre a precisão e o recall, sendo particularmente útil quando se busca um equilíbrio entre essas duas métricas. Por fim, o \textit{Support} refere-se ao número de ocorrências de cada instancia no dataset tanto negativas(Normal) quanto negativas(Anomala)
+
+A métrica de \textit{acurácia} não é ideal para essa analise tendo em vista que a maioria dos acessos de rede no mundo real são normais e raramente anômalos, então é muito mais interessante analisar falsos negativos e positivos do que o acerto geral.
+
+\subsection{Resultados com K-Nearest Neighbors}
+
+Para o modelo KNN, foram realizados alguns testes, com os resultados mais precisos foram encontrados com $K=1$, resultando
+em um F1-Score de 0.9946 e uma quantidade quase nula de falsos negativos/positivos. Provavelmente, esse comportamento ocorre devido à grande
+quantidade de dados disponíveis para cada entrada de treinamento, o que torna a maioria
+dos ataques mais evidentes. Valores superiores de $K$ levaram ao sobreajuste e ao
+decréscimo progressivo do desempenho do modelo.
+
+Após uma análise baseada na remoção individual de cada atributo, observou-se que o
+parâmetro \textit{hot} foi o mais decisivo para o modelo, reduzindo o F1-Score para
+0.9931 quando removido. Outra informação relevante é que oito atributos, quando
+removidos, aumentaram a precisão do modelo. Após essa remoção, o F1-Score atingiu
+0.9960, sendo o atributo \textit{diff\_srv\_rate} o mais prejudicial, cuja exclusão
+resultou em um aumento de 0.0005 pontos no F1-Score.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho do KNN}
+\label{tab:knn_metrics}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 0.99 & 0.99 \\
+Recall    & 0.99 & 0.99 \\
+F1-Score  & 0.99 & 0.99 \\
+Support   & 4034 & 3524 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Resultados com Isolation Forest}
+
+O Isolation Forest se mostrou ineficiente quando comparado aos outros
+modelos utilizados durante a pesquisa, apresentando a menor acurácia (0.748).
+Entretanto, como falado anteriormente, a acurácia não é a métrica mais confiável em conjuntos de dados
+desbalanceados, o que é comum em problemas de detecção de anomalias, pois pode ser
+inflacionada pela capacidade do modelo em classificar corretamente a classe
+majoritária (tráfego normal). Dessa forma, uma análise mais aprofundada torna-se
+necessária.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho do Isolation Forest}
+\label{tab:if_metrics}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 1.00 & 0.65 \\
+Recall    & 0.53 & 1.00 \\
+F1-Score  & 0.69 & 0.79 \\
+Support   & 2690 & 2349 \\
+\hline
+\end{tabular}
+\end{table}
+
+Como pode ser observado na Tabela~\ref{tab:if_metrics}, todos os eventos classificados
+como normais eram, de fato, normais. A principal dificuldade do modelo esteve na
+identificação correta das anomalias, apresentando precisão de 65\% (0.65) ao rotular
+eventos como intrusão. Além disso, considerando todos os eventos analisados, o modelo
+foi capaz de identificar corretamente apenas 53\% (0.53) dos eventos normais, o que
+indica a geração de um elevado número de falsos positivos, isto é, eventos normais
+classificados como ataques.
+
+Por outro lado, o Isolation Forest não apresentou o problema de gerar falsos negativos,
+uma vez que ataques não foram classificados como eventos normais. Em síntese, o modelo
+apresenta dificuldades em verificar se um evento é realmente normal, gerando falsos
+positivos que podem ocasionar retrabalho para equipes de segurança, as quais precisam
+analisar manualmente eventos normais identificados como anômalos.
+
+\subsection{Resultados com Random Forest}
+
+O Random Forest apresentou o melhor desempenho entre todos os modelos avaliados quando
+utilizado com o conjunto completo de atributos, alcançando uma acurácia de 0.9975. O
+modelo demonstrou excelente capacidade de generalização, classificando corretamente
+tanto o tráfego normal quanto as intrusões, o que evidencia seu elevado poder
+discriminativo em um cenário de detecção de anomalias em redes.
+
+Conforme apresentado na Tabela~\ref{tab:rf_metrics_full}, os valores de Precision,
+Recall e F1-Score foram iguais a 1.00 para ambas as classes, indicando a ausência
+praticamente total de falsos positivos e falsos negativos. Esses resultados reforçam a
+robustez do Random Forest e justificam sua utilização como modelo de referência para a
+análise de importância dos atributos. Nesse contexto, a feature \textit{src\_bytes} foi
+identificada como a mais influente no modelo, motivando sua remoção em uma segunda etapa
+experimental.
+
+Com o objetivo de avaliar a robustez do Random Forest frente a conjuntos de dados
+incompletos, o modelo foi reavaliado após a exclusão da feature \textit{src\_bytes}.
+Nesse cenário, observou-se uma queda significativa no desempenho, com a acurácia
+reduzida para 0.9630, conforme apresentado na Tabela~\ref{tab:rf_metrics_reduced}.
+Embora o modelo ainda apresente bons resultados globais, nota-se uma redução no Recall
+da classe normal (0.93), indicando um aumento na taxa de falsos positivos, ou seja,
+eventos normais classificados incorretamente como anomalias.
+
+Esse comportamento evidencia a forte dependência do Random Forest em relação a
+atributos altamente informativos e reforça a importância da qualidade e da completude
+dos dados em aplicações de detecção de intrusões em redes. Além disso, os resultados
+obtidos corroboram a motivação deste trabalho em investigar como diferentes modelos de
+aprendizado de máquina reagem à ausência de atributos relevantes no conjunto de dados.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho do Random Forest (dataset completo)}
+\label{tab:rf_metrics_full}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 1.00 & 1.00 \\
+Recall    & 1.00 & 1.00 \\
+F1-Score  & 1.00 & 1.00 \\
+Support   & 3523 & 4035 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho do Random Forest (dataset reduzido, sem \textit{src\_bytes})}
+\label{tab:rf_metrics_reduced}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 0.99 & 0.94 \\
+Recall    & 0.93 & 0.99 \\
+F1-Score  & 0.96 & 0.97 \\
+Support   & 3523 & 4035 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\subsection{Resultados com MLP}
+
+O Multilayer Perceptron foi avaliado em dois cenários distintos: um utilizando todas as
+features disponíveis no conjunto de dados e outro com a remoção da feature
+\textit{src\_bytes}, identificada como a mais influente no modelo Random Forest, que
+apresentou o melhor desempenho geral. O objetivo dessa análise foi avaliar o impacto da
+ausência de uma feature relevante no desempenho do MLP, simulando cenários em que o
+conjunto de dados pode estar incompleto.
+
+No cenário completo, o MLP obteve uma acurácia de 0.9960, apresentando desempenho
+equilibrado entre as classes. A classe Anomalia apresentou precisão de 0.9969 e recall
+de 0.9946, enquanto a classe Normal obteve precisão de 0.9953 e recall de 0.9973,
+resultando em F1-Scores superiores a 0.995 para ambas as classes, conforme apresentado
+na Tabela~\ref{tab:mlp_full}.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho do MLP com todas as features}
+\label{tab:mlp_full}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Anomalia} & \textbf{Classe Normal} \\
+\hline
+Precision & 0.9969 & 0.9953 \\
+Recall    & 0.9946 & 0.9973 \\
+F1-Score  & 0.9957 & 0.9963 \\
+Support   & 3523   & 4035   \\
+\hline
+\end{tabular}
+\end{table}
+
+Após a remoção da feature \textit{src\_bytes}, o MLP apresentou uma leve redução de
+desempenho, com acurácia de 0.9952. Observa-se que, embora o recall da classe Anomalia
+tenha aumentado para 0.9969, houve redução na precisão dessa classe, passando para
+0.9929. Para a classe Normal, verificou-se comportamento inverso, com aumento da
+precisão e redução do recall. Ainda assim, os valores de F1-Score permaneceram elevados
+para ambas as classes, indicando que o modelo manteve desempenho consistente mesmo com a
+remoção de uma feature altamente relevante em outro classificador, conforme mostrado na
+Tabela~\ref{tab:mlp_reduced}.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho do MLP sem a feature \textit{src\_bytes}}
+\label{tab:mlp_reduced}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Anomalia} & \textbf{Classe Normal} \\
+\hline
+Precision & 0.9929 & 0.9973 \\
+Recall    & 0.9969 & 0.9938 \\
+F1-Score  & 0.9949 & 0.9955 \\
+Support   & 3523   & 4035   \\
+\hline
+\end{tabular}
+\end{table}
+
+De forma geral, os resultados indicam que o MLP é relativamente robusto à remoção de uma
+feature altamente influente em outro modelo, apresentando apenas pequenas variações nas
+métricas de desempenho. Esse comportamento reforça a capacidade do MLP de aprender
+representações distribuídas dos dados, reduzindo sua dependência de atributos
+individuais.
+
