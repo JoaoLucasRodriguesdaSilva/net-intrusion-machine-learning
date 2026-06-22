@@ -9,64 +9,64 @@ O \textit{F1-Score} consiste na média harmônica entre a precisão e o recall, 
 
 A métrica de \textit{acurácia} não é ideal para essa analise tendo em vista que a maioria dos acessos de rede no mundo real são normais e raramente anômalos, então é muito mais interessante analisar falsos negativos e positivos do que o acerto geral.
 
-\subsection{Resultados e Discussão do Classificador KNN}
+\subsection{Resultados com K-Nearest Neighbors (KNN)}
 
-O modelo KNN configurado com os parâmetros ótimos advindos do \textit{GridSearchCV} ($K=3$, distância 
-Manhattan) foi submetido ao conjunto de teste independente, composto por $7.558$ amostras inéditas. 
-O classificador obteve um desempenho robusto, consolidando uma acurácia final de $99,4311\%$. As 
-métricas detalhadas de precisão, sensibilidade (\textit{recall}) e F1-Score para ambas as classes 
-de tráfego estão dispostas na Tabela~\ref{tab:metricas_knn_novo}.
+O K-Nearest Neighbors (KNN) foi avaliado com a configuração otimizada de $K=3$ e métrica de distância 
+Manhattan. No cenário utilizando o conjunto completo de atributos, o modelo alcançou uma acurácia global 
+de 0.9943. O classificador demonstrou alta capacidade de generalização e separação, com F1-Score de 0.99 
+para ambas as classes, minimizando de forma eficaz os falsos positivos e falsos negativos, conforme 
+evidenciado na Tabela~\ref{tab:knn_full}.
 
 \begin{table}[H]
 \centering
-\caption{Métricas de desempenho finais obtidas pelo classificador KNN.}
-\label{tab:metricas_knn_novo}
-\begin{tabular}{lcccc}
+\caption{Métricas de desempenho do KNN (dataset completo)}
+\label{tab:knn_full}
+\begin{tabular}{lcc}
 \hline
-\textbf{Classe} & \textbf{Precisão} & \textbf{Sensibilidade (Recall)} & \textbf{F1-Score} & \textbf{Suporte} \\ \hline
-Anomalia (Ataque) & 1,00              & 0,99                            & 0,99              & 3.523            \\
-Tráfego Normal   & 0,99              & 1,00                            & 0,99              & 4.035            \\ \hline
-\textbf{Média Ponderada} & \textbf{0,99}     & \textbf{0,99}                   & \textbf{0,99}     & \textbf{7.558}   \\ \hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 0.99 & 1.00 \\
+Recall    & 1.00 & 0.99 \\
+F1-Score  & 0.99 & 0.99 \\
+Support   & 4035 & 3523 \\
+\hline
 \end{tabular}
 \end{table}
 
-Uma contribuição analítica inédita desta versão do projeto consistiu na mensuração do tempo de inferência 
-do modelo, métrica negligenciada no estudo anterior. O KNN demandou $3,3678$ segundos para classificar o 
-lote de teste. Sob a ótica de implantação em sistemas de detecção de intrusão em tempo real (IDS), esse 
-tempo evidencia o principal gargalo dos algoritmos de aprendizado tardio (\textit{lazy learning}): a 
-necessidade de computar a matriz de distâncias contra todo o conjunto de treino a cada nova requisição. 
-Embora altamente acurado, o KNN demonstra uma desvantagem operacional severa em termos de latência quando 
-comparado a modelos paramétricos como a Regressão Logística, cuja inferência é quase instantânea.
+Apesar do excelente poder discriminativo, a avaliação revelou um fator limitante crítico inerente à arquitetura 
+de aprendizado tardio (\textit{lazy learning}) do KNN: o elevado tempo de inferência. O modelo demandou 
+aproximadamente 3,36 segundos para classificar as instâncias de teste. Trata-se de um custo computacional 
+significativamente superior ao dos modelos paramétricos avaliados, o que pode representar um gargalo severo em 
+aplicações de detecção de intrusão em tempo real.
 
-\subsubsection{Análise de Resiliência: O Impacto da Supressão do Atributo src\_bytes}
+Com o objetivo de avaliar a robustez do modelo frente a conjuntos de dados incompletos, o KNN foi reavaliado após 
+a exclusão da feature \textit{src\_bytes}. Diferentemente da queda de desempenho observada em classificadores 
+baseados em árvores de decisão, o KNN apresentou uma resiliência absoluta. Conforme apresentado na 
+Tabela~\ref{tab:knn_reduced}, todas as métricas permaneceram rigorosamente inalteradas, mantendo a acurácia em 0.9943.
 
-Para responder ao cerne da investigação proposta pela equipe --- avaliar a estabilidade dos classificadores 
-diante de cenários de indisponibilidade ou corrupção de dados ---, conduziu-se o teste de resiliência através 
-da remoção cirúrgica do atributo \textit{src\_bytes} do conjunto de dados, reavaliando o modelo sob as mesmas condições prévias.
+\begin{table}[H]
+\centering
+\caption{Métricas de desempenho do KNN (dataset reduzido, sem \textit{src\_bytes})}
+\label{tab:knn_reduced}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 0.99 & 1.00 \\
+Recall    & 1.00 & 0.99 \\
+F1-Score  & 0.99 & 0.99 \\
+Support   & 4035 & 3523 \\
+\hline
+\end{tabular}
+\end{table}
 
-Diferenciando-se radicalmente do comportamento observado no semestre passado, no qual a perda dessa 
-\textit{feature} crítica colapsou o desempenho de classificadores baseados em árvores (como o \textit{Random Forest}), 
-o KNN demonstrou uma estabilidade absoluta incomum. A acurácia do classificador sem o atributo manteve-se rigorosamente 
-em $99,4311\%$, registrando um impacto nulo ($0,0000\%$) de degradação. 
-
-Como a acurácia foi obtida sobre dados de teste previamente desconhecidos pelo modelo, descarta-se a hipótese 
-de \textit{overfitting}, sendo a resiliência explicada por três fatores de ordem matemática e arquitetural:
-
-\begin{enumerate}
-    \item \textbf{Diluição Vetorial em Espaços Multidimensionais:} A expansão das variáveis categóricas via 
-    \textit{One-Hot Encoding} gerou um espaço de 118 dimensões uniformemente escalonadas. Geometricamente, 
-    a exclusão de um único eixo coordenado em um espaço de tamanha magnitude foi incapaz de deslocar a posição 
-    relativa dos vetores de forma acentuada, preservando os mesmos vizinhos mais próximos originais.
-    \item \textbf{Redundância Informacional (Multicolinearidade):} Anomalias e assinaturas de intrusão em redes 
-    de computadores deixam rastros correlacionados em múltiplos atributos de forma simultânea (como alterações 
-    drásticas em \textit{flags}, tipos de serviços e taxas de erro). O KNN foi capaz de contornar a ausência do 
-    \textit{src\_bytes} extraindo a assinatura da anomalia por meio das colunas remanescentes.
-    \item \textbf{Robustez da Distância Global frente a Divisões Locais:} Modelos baseados em árvores dividem o 
-    espaço de busca por meio de regras locais rígidas baseadas nos atributos de maior ganho de informação; a 
-    remoção da \textit{feature} principal quebra a árvore estrutural. O KNN, por sua vez, opera sob uma perspectiva 
-    holística de distância global, o que o torna arquiteturalmente imune à perda de uma característica isolada, 
-    revelando-se uma alternativa superior em ambientes de rede instáveis onde a integridade dos dados pode ser comprometida.
-\end{enumerate}
+Como as inferências foram realizadas sobre dados de teste, descarta-se a hipótese de \textit{overfitting}. Este 
+comportamento altamente estável é explicado por propriedades estruturais do modelo operando neste espaço de dados: 
+(1) a diluição vetorial em um espaço de alta dimensionalidade (118 dimensões resultantes da codificação binária), onde 
+a exclusão de um único eixo afeta de forma negligenciável o cálculo geral de similaridade; (2) a redundância informacional 
+e forte correlação inerente às assinaturas de ataques de rede; e (3) a robustez da inferência baseada em distância 
+geométrica global, que, ao contrário das regras de partição locais, não colapsa com a ausência de um único atributo de 
+alto ganho de informação.
 
 \subsection{Resultados com Isolation Forest}
 

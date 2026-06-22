@@ -12,41 +12,23 @@ analisar a importância das features, características relevantes para problemas
 detecção de intrusão em redes~\cite{breiman_random_forest}.
 
 \subsection{K-Nearest Neighbors (KNN)}
-Como modelo classificador basal e de caráter não paramétrico, utilizou-se o algoritmo 
-$K$-Nearest Neighbors (KNN). O KNN diferencia-se das abordagens estatísticas tradicionais 
-por não construir um modelo matemático explícito durante a fase de treinamento, baseando 
-sua inferência na busca por instâncias conhecidas armazenadas em memória que apresentem 
-maior proximidade geométrica em relação à nova entrada~\cite{cover_hart_knn}.
+Como modelo classificador basal e de caráter não paramétrico, utilizou-se o algoritmo $K$-Nearest Neighbors 
+(KNN). O KNN diferencia-se das abordagens estatísticas tradicionais por não construir um modelo matemático 
+explícito durante a fase de treinamento, baseando sua inferência na busca por instâncias conhecidas armazenadas 
+em memória que apresentem maior proximidade geométrica em relação à nova entrada~\cite{cover_hart_knn}.
 
-\textit{Aprimoramentos no Pré-processamento e Espaço Dimensional:} Diferenciando-se da 
-abordagem simplificada adotada no ciclo inicial deste estudo, na qual variáveis categóricas 
-foram codificadas por mapeamento ordinal (\textit{Label Encoding}), a presente metodologia 
-implementou de forma rigorosa a expansão por codificação binária (\textit{One-Hot Encoding}) 
-para os atributos nominais \textit{protocol\_type}, \textit{service} e \textit{flag}. 
-Sob a ótica geométrica do KNN, o uso de \textit{Label Encoding} corrompe o cálculo de similaridade 
-ao impor uma relação de ordem e magnitude inexistente entre categorias discretas (como assumir que 
-um protocolo de rede é numericamente superior a outro). A transformação para variáveis \textit{dummy} 
-eliminou essa distorção, expandindo o espaço preditor para 118 dimensões. Para mitigar o impacto de 
-variáveis com ordens de grandeza discrepantes, aplicou-se a padronização Z-score 
-(\textit{StandardScaler}) em todo o conjunto, assegurando pesos idênticos no cálculo de distâncias.
+Conforme detalhado na secção de pré-processamento, a aplicação da codificação binária (\textit{One-Hot Encoding}) 
+e da padronização (\textit{StandardScaler}) foi de extrema importância para garantir a coerência matemática deste 
+classificador. Sob a ótica do KNN, tais transformações asseguram que as variáveis categóricas não introduzam 
+relações de ordem artificiais e que atributos com ordens de grandeza discrepantes assumam pesos idênticos no 
+cálculo das distâncias espaciais.
 
-\textit{Otimização de Hiperparâmetros via Busca em Grade (GridSearchCV):} O principal avanço 
-metodológico em relação ao estudo do semestre anterior consistiu na substituição da escolha 
-arbitrária do número de vizinhos ($K$) por uma estratégia de otimização automatizada baseada 
-em busca em grade (\textit{GridSearchCV}) acoplada a uma validação cruzada de 3 partições 
-($3\text{-fold Cross Validation}$). Enquanto a análise original limitava-se a avaliar o modelo 
-sob o viés de $K=1$, a presente arquitetura avaliou exaustivamente um espaço de busca composto 
-por $K \in \{3, 5, 7, 9, 11, 15\}$ combinado a duas funções de métrica de distância distintas: 
-a Euclidiana (norma $L_2$) e a de Manhattan (norma $L_1$). 
-
-O processo de otimização identificou como modelo campeão a combinação de $K=3$ vizinhos com a 
-distância de Manhattan, alcançando a acurácia de $99,3989\%$ na validação interna de treino. A 
-rejeição de $K=1$ foi uma decisão metodológica consciente para evitar o \textit{overfitting} 
-(superajuste) inerente a vizinhanças unitárias, que tendem a memorizar ruídos do tráfego. Além 
-disso, a preferência matemática pela norma $L_1$ justifica-se teoricamente pela Maldição da 
-Dimensionalidade em espaços de alta densidade (118 features), onde a norma $L_1$ demonstra-se 
-significativamente mais estável e eficiente para preservar o contraste de distância entre 
-pontos próximos e distantes do que a norma $L_2$.
+Para a definição da configuração ideal, aplicou-se a estratégia de otimização automatizada por busca em grade 
+(\textit{GridSearchCV}) detalhada anteriormente. O espaço de busca para este modelo englobou diferentes números 
+de vizinhos ($K \in \{3, 5, 7, 9, 11, 15\}$) e métricas de distância (Euclidiana e Manhattan). O processo identificou 
+como ótima a combinação de $K=3$ com a distância de Manhattan (norma $L_1$). A adoção de $K=3$ mitiga o risco de 
+\textit{overfitting} inerente a $K=1$, enquanto a métrica de Manhattan demonstra-se teoricamente mais estável e eficiente 
+do que a Euclidiana (norma $L_2$) para lidar com a Maldição da Dimensionalidade num espaço expandido de 118 \textit{features}.
 
 \subsection{Isolation Forest}
 
