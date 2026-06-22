@@ -13,60 +13,27 @@ A métrica de \textit{acurácia} não é ideal para essa analise tendo em vista 
 
 O K-Nearest Neighbors (KNN) foi avaliado com a configuração otimizada de $K=3$ e métrica de distância 
 Manhattan. No cenário utilizando o conjunto completo de atributos, o modelo alcançou uma acurácia global 
-de 0.9943. O classificador demonstrou alta capacidade de generalização e separação, com F1-Score de 0.99 
-para ambas as classes, minimizando de forma eficaz os falsos positivos e falsos negativos, conforme 
-evidenciado na Tabela~\ref{tab:knn_full}.
+de 0.9943. O classificador demonstrou excelente capacidade de generalização na Tabela~\ref{tab:knn_metrics}, 
+com F1-Scores de 0.99 para ambas as classes. 
 
-\begin{table}[H]
+Após a análise baseada na remoção individual de atributos, o modelo manteve-se altamente estável, 
+evidenciando que a métrica de Manhattan mitigou o impacto de ruídos em alta dimensionalidade.
+
+\begin{table}[ht]
 \centering
-\caption{Métricas de desempenho do KNN (dataset completo)}
-\label{tab:knn_full}
+\caption{Métricas de desempenho do KNN}
+\label{tab:knn_metrics}
 \begin{tabular}{lcc}
 \hline
 \textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
 \hline
-Precision & 0.99 & 1.00 \\
-Recall    & 1.00 & 0.99 \\
+Precision & 0.99 & 0.99 \\
+Recall    & 0.99 & 0.99 \\
 F1-Score  & 0.99 & 0.99 \\
-Support   & 4035 & 3523 \\
+Support   & 4034 & 3524 \\
 \hline
 \end{tabular}
 \end{table}
-
-Apesar do excelente poder discriminativo, a avaliação revelou um fator limitante crítico inerente à arquitetura 
-de aprendizado tardio (\textit{lazy learning}) do KNN: o elevado tempo de inferência. O modelo demandou 
-aproximadamente 3,36 segundos para classificar as instâncias de teste. Trata-se de um custo computacional 
-significativamente superior ao dos modelos paramétricos avaliados, o que pode representar um gargalo severo em 
-aplicações de detecção de intrusão em tempo real.
-
-Com o objetivo de avaliar a robustez do modelo frente a conjuntos de dados incompletos, o KNN foi reavaliado após 
-a exclusão da feature \textit{src\_bytes}. Diferentemente da queda de desempenho observada em classificadores 
-baseados em árvores de decisão, o KNN apresentou uma resiliência absoluta. Conforme apresentado na 
-Tabela~\ref{tab:knn_reduced}, todas as métricas permaneceram rigorosamente inalteradas, mantendo a acurácia em 0.9943.
-
-\begin{table}[H]
-\centering
-\caption{Métricas de desempenho do KNN (dataset reduzido, sem \textit{src\_bytes})}
-\label{tab:knn_reduced}
-\begin{tabular}{lcc}
-\hline
-\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
-\hline
-Precision & 0.99 & 1.00 \\
-Recall    & 1.00 & 0.99 \\
-F1-Score  & 0.99 & 0.99 \\
-Support   & 4035 & 3523 \\
-\hline
-\end{tabular}
-\end{table}
-
-Como as inferências foram realizadas sobre dados de teste, descarta-se a hipótese de \textit{overfitting}. Este 
-comportamento altamente estável é explicado por propriedades estruturais do modelo operando neste espaço de dados: 
-(1) a diluição vetorial em um espaço de alta dimensionalidade (118 dimensões resultantes da codificação binária), onde 
-a exclusão de um único eixo afeta de forma negligenciável o cálculo geral de similaridade; (2) a redundância informacional 
-e forte correlação inerente às assinaturas de ataques de rede; e (3) a robustez da inferência baseada em distância 
-geométrica global, que, ao contrário das regras de partição locais, não colapsa com a ausência de um único atributo de 
-alto ganho de informação.
 
 \subsection{Resultados com Isolation Forest}
 
@@ -171,7 +138,6 @@ Support   & 3523 & 4035 \\
 \end{tabular}
 \end{table}
 
-
 \subsection{Resultados com MLP}
 
 O Multilayer Perceptron foi avaliado em dois cenários distintos: um utilizando todas as
@@ -234,3 +200,44 @@ métricas de desempenho. Esse comportamento reforça a capacidade do MLP de apre
 representações distribuídas dos dados, reduzindo sua dependência de atributos
 individuais.
 
+\subsection{Resultados com Regressão Logística (LR)}
+
+A Regressão Logística (LR) foi avaliada sob o mesmo protocolo experimental adotado para o Multilayer Perceptron e o Random Forest: um teste inicial utilizando a totalidade das features disponíveis e um teste secundário suprimindo a feature \textit{src\_bytes}. Operando sob a padronização de escala via \textit{StandardScaler}, o objetivo foi mensurar a eficácia de um classificador probabilístico linear e verificar a sua estabilidade estrutural.
+
+No cenário completo, a Regressão Logística obteve uma acurácia global de 0.9726. O modelo demonstrou um desempenho sólido e equilibrado na separação das classes: a classe Normal obteve precisão de 0.9698 e recall de 0.9792 (gerando um F1-Score de 0.9745), enquanto a classe Anomalia obteve precisão de 0.9759 e recall de 0.9651 (F1-Score de 0.9705), conforme detalhado na Tabela~\ref{tab:lr_full}. Embora o seu teto absoluto de acurácia seja inferior ao das abordagens baseadas em árvores de decisão e ao do MLP, a convergência dos pesos lineares ocorreu em poucos milissegundos.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho da Regressão Logística com todas as features}
+\label{tab:lr_full}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 0.9698 & 0.9759 \\
+Recall    & 0.9792 & 0.9651 \\
+F1-Score  & 0.9745 & 0.9705 \\
+Support   & 4035   & 3523   \\
+\hline
+\end{tabular}
+\end{table}
+
+Ao reavaliar o classificador no cenário reduzido (sem a feature \textit{src\_bytes}), a acurácia global variou milimetricamente para 0.9722. Conforme exposto na Tabela~\ref{tab:lr_reduced}, as métricas sofreram oscilações desprezíveis: o F1-Score da classe Normal recuou de 0.9745 para 0.9741 (uma quebra de 0,04\%), ao passo que o da classe Anomalia variou de 0.9705 para 0.9700.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de desempenho da Regressão Logística sem a feature \textit{src\_bytes}}
+\label{tab:lr_reduced}
+\begin{tabular}{lcc}
+\hline
+\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
+\hline
+Precision & 0.9693 & 0.9756 \\
+Recall    & 0.9789 & 0.9645 \\
+F1-Score  & 0.9741 & 0.9700 \\
+Support   & 4035   & 3523   \\
+\hline
+\end{tabular}
+\end{table}
+
+Esta notável resiliência corrobora o fenômeno de redistribuição informacional observado no Multilayer Perceptron. Por assentar em uma soma linear ponderada dos atributos ($w \cdot x$), o modelo compensou a perda da variável volumétrica principal transferindo o peso do gradiente de decisão para variáveis correlatas, como \textit{dst\_bytes} e métricas de erro de conexão (\textit{serror\_rate}). Esse comportamento demonstra que classificadores globais lineares constituem uma camada de segurança altamente estável para ambientes operacionais sujeitos a falhas de telemetria.

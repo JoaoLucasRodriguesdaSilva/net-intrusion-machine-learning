@@ -55,3 +55,22 @@ Ressalta-se que o desempenho do MLP depende
 fortemente da escolha adequada de hiperparâmetros e do pré-processamento dos dados,
 conforme discutido na literatura~\cite{haykin_neural_networks}.
 
+\subsection{Regressão Logística}
+A Regressão Logística (LR) é um algoritmo de aprendizado de máquina supervisionado clássico,
+amplamente utilizado para a estimativa de probabilidades em problemas de classificação binária.
+Diferentemente de abordagens baseadas em partições de entropia, o modelo opera construindo uma fronteira
+de decisão linear através de uma combinação ponderada dos atributos de entrada ($w \cdot x$),
+mapeando o valor contínuo resultante no intervalo estrito de $[0, 1]$ através da função logística Sigmoide.
+
+A introdução da Regressão Logística neste trabalho justifica-se pela sua extrema eficiência computacional,
+transparência paramétrica e por estabelecer uma linha de base estatística comparativa para os classificadores mais complexos.
+Assim como no caso do KNN e do MLP, a normalização prévia das variáveis através da padronização de escala
+(\textit{StandardScaler}) e a codificação binária de atributos nominais foram etapas obrigatórias. Tal tratamento
+assegura que variáveis de elevada magnitude, como a contagem de bytes transferidos, não distorçam o gradiente de
+otimização ou o cálculo dos coeficientes globais.
+
+Alinhando-se estritamente à metodologia de avaliação dos demais modelos supervisionados, a Regressão Logística foi
+testada sob dois regimes experimentais: o cenário completo, englobando a totalidade das variáveis preditoras, e o
+cenário reduzido, no qual a \textit{feature} de maior impacto (\textit{src\_bytes}) foi suprimida. Esta abordagem permitiu
+avaliar a resiliência estrutural e a capacidade de redistribuição automática de pesos do classificador linear perante
+condições de perda de telemetria na rede.
