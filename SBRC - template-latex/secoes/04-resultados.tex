@@ -35,46 +35,6 @@ Support   & 4034 & 3524 \\
 \end{tabular}
 \end{table}
 
-\subsection{Resultados com Isolation Forest}
-
-O Isolation Forest se mostrou ineficiente quando comparado aos outros
-modelos utilizados durante a pesquisa, apresentando a menor acurácia (0.748).
-Entretanto, como falado anteriormente, a acurácia não é a métrica mais confiável em conjuntos de dados
-desbalanceados, o que é comum em problemas de detecção de anomalias, pois pode ser
-inflacionada pela capacidade do modelo em classificar corretamente a classe
-majoritária (tráfego normal). Dessa forma, uma análise mais aprofundada torna-se
-necessária.
-
-\begin{table}[ht]
-\centering
-\caption{Métricas de desempenho do Isolation Forest}
-\label{tab:if_metrics}
-\begin{tabular}{lcc}
-\hline
-\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
-\hline
-Precision & 1.00 & 0.65 \\
-Recall    & 0.53 & 1.00 \\
-F1-Score  & 0.69 & 0.79 \\
-Support   & 2690 & 2349 \\
-\hline
-\end{tabular}
-\end{table}
-
-Como pode ser observado na Tabela~\ref{tab:if_metrics}, todos os eventos classificados
-como normais eram, de fato, normais. A principal dificuldade do modelo esteve na
-identificação correta das anomalias, apresentando precisão de 65\% (0.65) ao rotular
-eventos como intrusão. Além disso, considerando todos os eventos analisados, o modelo
-foi capaz de identificar corretamente apenas 53\% (0.53) dos eventos normais, o que
-indica a geração de um elevado número de falsos positivos, isto é, eventos normais
-classificados como ataques.
-
-Por outro lado, o Isolation Forest não apresentou o problema de gerar falsos negativos,
-uma vez que ataques não foram classificados como eventos normais. Em síntese, o modelo
-apresenta dificuldades em verificar se um evento é realmente normal, gerando falsos
-positivos que podem ocasionar retrabalho para equipes de segurança, as quais precisam
-analisar manualmente eventos normais identificados como anômalos.
-
 \subsection{Resultados com Random Forest}
 
 O Random Forest apresentou o melhor desempenho entre todos os modelos avaliados quando
